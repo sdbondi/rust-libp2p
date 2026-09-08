@@ -23,11 +23,9 @@
 use core::{cmp, fmt, hash};
 
 use asn1_der::typed::{DerDecodable, Sequence};
-use k256::elliptic_curve::Generate;
 use k256::{
     ecdsa::Signature,
     sha2::{Digest as ShaDigestTrait, Sha256},
-    ProjectivePoint,
 };
 use zeroize::Zeroize;
 
@@ -95,7 +93,9 @@ impl SecretKey {
     /// Generate a new random Secp256k1 secret key.
     #[cfg(feature = "rand")]
     pub fn generate() -> SecretKey {
-        SecretKey(k256::ecdsa::SigningKey::generate_from_rng(&mut rand::rng()))
+        SecretKey(k256::elliptic_curve::Generate::generate_from_rng(
+            &mut rand::rng(),
+        ))
     }
 
     /// Create a secret key from a byte slice, zeroing the slice on success.
@@ -194,19 +194,15 @@ impl PublicKey {
         self.verify_hash(digest.finalize().as_slice(), sig)
     }
 
-    /// Verify the Secp256k1 DER-encoded signature on a raw 256-bit message using the public key.  
+    /// Verify the Secp256k1 DER-encoded signature on a raw 256-bit message using the public key.
     /// Will return false if the hash is not 32 bytes long, or the signature cannot be parsed.
     pub fn verify_hash(&self, msg: &[u8], sig: &[u8]) -> bool {
-        let Ok(msg) = msg.try_into() else {
+        if msg.len() != 32 {
             return false;
-        };
+        }
         Signature::from_der(sig).is_ok_and(|s| {
-            k256::ecdsa::hazmat::verify_prehashed(
-                &ProjectivePoint::from(self.0.as_affine()),
-                &msg,
-                &s,
-            )
-            .is_ok()
+            k256::ecdsa::signature::hazmat::PrehashVerifier::verify_prehash(&self.0, msg, &s)
+                .is_ok()
         })
     }
 

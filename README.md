@@ -9,10 +9,30 @@
 This repository is the central place for Rust development of the [libp2p](https://libp2p.io) spec.
 
 ## Tari fork
-- Add ristretto/Schnorr identity support
-- multiaddr moved into this repo to avoid dependency issues
-- update hickory_resolver (support for tokio resolver only)
 
+This is a fork of upstream `libp2p/rust-libp2p`. It cannot be contributed upstream because it adds
+a Tari-specific key type. All deviations from upstream `master` are listed here; keep this list up
+to date so future merges from upstream stay tractable.
+
+- **sr25519 (Ristretto/Schnorr) identity support**, backed by [`tari_crypto`]:
+  - `identity/src/sr25519.rs` — new module.
+  - `identity/src/keypair.rs`, `identity/src/lib.rs`, `identity/src/error.rs` — `Sr25519` variants
+    and encode/decode wiring.
+  - `identity/src/generated/keys.proto` — new `Sr25519 = 4` `KeyType`
+    (`keys_proto.rs` is regenerated with `cargo run -p gen-proto`).
+  - `identity/Cargo.toml` — optional `tari_crypto` dependency and `sr25519` feature.
+  - `libp2p/Cargo.toml` — `sr25519` feature; `serde` additionally enables `libp2p-identity/serde`.
+- **`multiaddr` vendored into this repo** (`multiaddr/`) to avoid dependency issues. It is an
+  unmodified copy of the crates.io release upstream `master` depends on (currently `0.19.0`), with
+  only its `libp2p-identity` dependency redirected at the workspace. When upstream bumps the
+  `multiaddr` version, copy the corresponding crates.io release over `multiaddr/src` and
+  `multiaddr/tests`.
+- **Workspace manifest** (`Cargo.toml`):
+  - `libp2p-identity` and `multiaddr` are path dependencies rather than crates.io ones.
+  - `wasm-bindgen-futures` is left unpinned (upstream pins it to `=0.4.58`).
+- `.gitignore` — ignore `.idea/`.
+
+[`tari_crypto`]: https://crates.io/crates/tari-crypto
 
 ## Getting started
 
@@ -100,6 +120,7 @@ Conduct](https://github.com/ipfs/community/blob/master/code-of-conduct.md).
 - [beetle](https://github.com/n0-computer/beetle) - Next-generation implementation of IPFS for Cloud & Mobile platforms.
 - [Lighthouse](https://github.com/sigp/lighthouse) - Ethereum consensus client in Rust.
 - [Locutus](https://github.com/freenet/locutus) - Global, observable, decentralized key-value store.
+- [Neptune](https://github.com/Neptune-Crypto/neptune-core) - post-quantum, scalable, and private blockchain with zk-STARKs on Layer-1.
 - [OpenMina](https://github.com/openmina/openmina) - In-browser Mina Rust implementation.
 - [qaul قول](https://github.com/qaul/qaul.net) - Internet Independent Wireless Mesh Communication App
 - [rust-ipfs](https://github.com/rs-ipfs/rust-ipfs) - IPFS implementation in Rust.
@@ -113,3 +134,4 @@ used by [Polkadot](https://www.parity.io/technologies/polkadot/).
 - [Taple](https://github.com/opencanarias/taple-core) - Sustainable DLT for asset and process traceability by [OpenCanarias](https://www.opencanarias.com/en/).
 - [Ceylon](https://github.com/ceylonai/ceylon) - A Multi-Agent System (MAS) Development Framework.
 - [Fungi](https://github.com/enbop/fungi) - A platform built for seamless multi-device integration.
+- [Kinetic](https://github.com/saifmukhtar/kinetic) - Stateless, Sybil-resistant naming system with permanent identities using VDFs and drand.
