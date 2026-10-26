@@ -162,7 +162,12 @@ impl PublicKey {
         self.verify_in(SIGNING_CONTEXT, msg, sig)
     }
 
+    /// The identity key verifies nothing: under it the equation degenerates to `s·G = R`, which
+    /// anyone can satisfy.
     fn verify_in(&self, context: &[u8], msg: &[u8], sig: &[u8]) -> bool {
+        if self.point.is_identity() {
+            return false;
+        }
         let Some((public_nonce, s)) = decode_signature(sig) else {
             return false;
         };
@@ -178,14 +183,13 @@ impl PublicKey {
     }
 
     /// Try to parse a public key from a byte array containing the actual key as produced by
-    /// `to_bytes`. The identity point is rejected: under it the verification equation degenerates
-    /// to `s·G = R`, which anyone can satisfy.
+    /// `to_bytes`. Every canonically encoded point parses, so a PeerId derives from any
+    /// Ristretto255 public key.
     pub fn try_from_bytes(k: &[u8]) -> Result<PublicKey, DecodingError> {
         let compressed = CompressedRistretto::from_slice(k)
             .map_err(|e| DecodingError::failed_to_parse("Sr25519 public key", e))?;
         let point = compressed
             .decompress()
-            .filter(|p| !p.is_identity())
             .ok_or_else(|| invalid("Sr25519 public key"))?;
         Ok(PublicKey { compressed, point })
     }
@@ -414,8 +418,14 @@ mod tests {
     }
 
     #[test]
-    fn rejects_the_identity_public_key() {
-        assert!(PublicKey::try_from_bytes(&[0u8; 32]).is_err());
+    fn the_identity_public_key_verifies_nothing() {
+        let pk = PublicKey::try_from_bytes(&[0u8; 32]).unwrap();
+        let mut sig = [0u8; 64];
+        sig[..32].copy_from_slice(RistrettoPoint::mul_base(&Scalar::ONE).compress().as_bytes());
+        sig[32..].copy_from_slice(Scalar::ONE.as_bytes());
+        sig[63] |= SIGNATURE_MARKER;
+
+        assert!(!pk.verify(b"hello world", &sig));
     }
 
     #[test]
