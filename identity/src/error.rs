@@ -44,6 +44,7 @@ impl DecodingError {
         feature = "ecdsa",
         feature = "secp256k1",
         feature = "ed25519",
+        feature = "sr25519",
         feature = "rsa"
     ))]
     pub(crate) fn failed_to_parse<E, S>(what: &'static str, source: S) -> Self
@@ -64,6 +65,7 @@ impl DecodingError {
         feature = "ecdsa",
         feature = "secp256k1",
         feature = "ed25519",
+        feature = "sr25519",
         feature = "rsa"
     ))]
     pub(crate) fn bad_protobuf(
@@ -80,6 +82,7 @@ impl DecodingError {
         feature = "ecdsa",
         feature = "secp256k1",
         feature = "ed25519",
+        feature = "sr25519",
         feature = "rsa"
     ))]
     pub(crate) fn unknown_key_type(key_type: i32) -> Self {

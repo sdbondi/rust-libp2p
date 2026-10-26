@@ -1,3 +1,8 @@
+## 0.3.1
+
+- Add `sr25519` feature: Sr25519 keys and schnorrkel-compatible signatures under the
+  `libp2p` signing context, implemented on `curve25519-dalek` and `merlin`.
+
 ## 0.3.0
 
 - **secp256k1**: `PublicKey::verify` now enforces low-S signatures.

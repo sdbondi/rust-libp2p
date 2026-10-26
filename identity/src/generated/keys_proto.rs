@@ -20,6 +20,7 @@ pub enum KeyType {
     Ed25519 = 1,
     Secp256k1 = 2,
     Ecdsa = 3,
+    Sr25519 = 4,
 }
 impl KeyType {
     /// String value of the enum field names used in the ProtoBuf definition.
@@ -32,6 +33,7 @@ impl KeyType {
             Self::Ed25519 => "Ed25519",
             Self::Secp256k1 => "Secp256k1",
             Self::Ecdsa => "ECDSA",
+            Self::Sr25519 => "Sr25519",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
@@ -41,6 +43,7 @@ impl KeyType {
             "Ed25519" => Some(Self::Ed25519),
             "Secp256k1" => Some(Self::Secp256k1),
             "ECDSA" => Some(Self::Ecdsa),
+            "Sr25519" => Some(Self::Sr25519),
             _ => None,
         }
     }
